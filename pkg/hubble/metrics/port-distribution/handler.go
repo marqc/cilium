@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	"github.com/prometheus/client_golang/prometheus"
 
 	flowpb "github.com/cilium/cilium/api/v1/flow"
@@ -14,7 +15,7 @@ import (
 )
 
 type portDistributionHandler struct {
-	portDistribution *prometheus.CounterVec
+	portDistribution *util.CounterVec
 	context          *api.ContextOptions
 }
 
@@ -28,11 +29,11 @@ func (h *portDistributionHandler) Init(registry *prometheus.Registry, options ap
 	labels := []string{"protocol", "port"}
 	labels = append(labels, h.context.GetLabelNames()...)
 
-	h.portDistribution = prometheus.NewCounterVec(prometheus.CounterOpts{
+	h.portDistribution = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "port_distribution_total",
 		Help:      "Numbers of packets distributed by destination port",
-	}, labels)
+	}, labels, c.TTL)
 
 	registry.MustRegister(h.portDistribution)
 	return nil

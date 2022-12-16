@@ -6,6 +6,7 @@ package drop
 import (
 	"context"
 
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	"github.com/prometheus/client_golang/prometheus"
 
 	flowpb "github.com/cilium/cilium/api/v1/flow"
@@ -15,7 +16,7 @@ import (
 )
 
 type dropHandler struct {
-	drops   *prometheus.CounterVec
+	drops   *util.CounterVec
 	context *api.ContextOptions
 }
 
@@ -29,11 +30,11 @@ func (d *dropHandler) Init(registry *prometheus.Registry, options api.Options) e
 	contextLabels := d.context.GetLabelNames()
 	labels := append(contextLabels, "reason", "protocol")
 
-	d.drops = prometheus.NewCounterVec(prometheus.CounterOpts{
+	d.drops = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "drop_total",
 		Help:      "Number of drops",
-	}, labels)
+	}, labels, c.TTL)
 
 	registry.MustRegister(d.drops)
 	return nil

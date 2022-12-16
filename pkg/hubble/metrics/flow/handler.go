@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	"github.com/prometheus/client_golang/prometheus"
 
 	flowpb "github.com/cilium/cilium/api/v1/flow"
@@ -16,7 +17,7 @@ import (
 )
 
 type flowHandler struct {
-	flows   *prometheus.CounterVec
+	flows   *util.CounterVec
 	context *api.ContextOptions
 }
 
@@ -30,11 +31,11 @@ func (h *flowHandler) Init(registry *prometheus.Registry, options api.Options) e
 	labels := []string{"protocol", "type", "subtype", "verdict"}
 	labels = append(labels, h.context.GetLabelNames()...)
 
-	h.flows = prometheus.NewCounterVec(prometheus.CounterOpts{
+	h.flows = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "flows_processed_total",
 		Help:      "Total number of flows processed",
-	}, labels)
+	}, labels, c.TTL)
 
 	registry.MustRegister(h.flows)
 	return nil

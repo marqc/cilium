@@ -6,6 +6,7 @@ package icmp
 import (
 	"context"
 
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	"github.com/google/gopacket/layers"
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -14,7 +15,7 @@ import (
 )
 
 type icmpHandler struct {
-	icmp    *prometheus.CounterVec
+	icmp    *util.CounterVec
 	context *api.ContextOptions
 }
 
@@ -28,11 +29,11 @@ func (h *icmpHandler) Init(registry *prometheus.Registry, options api.Options) e
 	labels := []string{"family", "type"}
 	labels = append(labels, h.context.GetLabelNames()...)
 
-	h.icmp = prometheus.NewCounterVec(prometheus.CounterOpts{
+	h.icmp = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "icmp_total",
 		Help:      "Number of ICMP messages",
-	}, labels)
+	}, labels, c.TTL)
 
 	registry.MustRegister(h.icmp)
 	return nil

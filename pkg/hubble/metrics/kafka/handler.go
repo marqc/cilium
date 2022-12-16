@@ -7,6 +7,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	"github.com/prometheus/client_golang/prometheus"
 
 	flowpb "github.com/cilium/cilium/api/v1/flow"
@@ -14,8 +15,8 @@ import (
 )
 
 type kafkaHandler struct {
-	requests *prometheus.CounterVec
-	duration *prometheus.HistogramVec
+	requests *util.CounterVec
+	duration *util.HistogramVec
 	context  *api.ContextOptions
 }
 
@@ -26,16 +27,16 @@ func (h *kafkaHandler) Init(registry *prometheus.Registry, options api.Options) 
 	}
 	h.context = c
 
-	h.requests = prometheus.NewCounterVec(prometheus.CounterOpts{
+	h.requests = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "kafka_requests_total",
 		Help:      "Count of Kafka requests",
-	}, append(h.context.GetLabelNames(), "topic", "api_key", "error_code", "reporter"))
-	h.duration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	}, append(h.context.GetLabelNames(), "topic", "api_key", "error_code", "reporter"), c.TTL)
+	h.duration = util.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "kafka_request_duration_seconds",
 		Help:      "Quantiles of HTTP request duration in seconds",
-	}, append(h.context.GetLabelNames(), "topic", "api_key", "reporter"))
+	}, append(h.context.GetLabelNames(), "topic", "api_key", "reporter"), c.TTL)
 	registry.MustRegister(h.requests)
 	registry.MustRegister(h.duration)
 	return nil

@@ -12,13 +12,14 @@ import (
 	flowpb "github.com/cilium/cilium/api/v1/flow"
 	v1 "github.com/cilium/cilium/pkg/hubble/api/v1"
 	"github.com/cilium/cilium/pkg/hubble/metrics/api"
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	pkglabels "github.com/cilium/cilium/pkg/labels"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 type flowsToWorldHandler struct {
-	flowsToWorld *prometheus.CounterVec
+	flowsToWorld *util.CounterVec
 	context      *api.ContextOptions
 	worldLabel   string
 	anyDrop      bool
@@ -48,11 +49,11 @@ func (h *flowsToWorldHandler) Init(registry *prometheus.Registry, options api.Op
 	}
 	labels = append(labels, h.context.GetLabelNames()...)
 
-	h.flowsToWorld = prometheus.NewCounterVec(prometheus.CounterOpts{
+	h.flowsToWorld = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "flows_to_world_total",
 		Help:      "Total number of flows to reserved:world",
-	}, labels)
+	}, labels, c.TTL)
 	h.worldLabel = fmt.Sprintf("%s:%s", pkglabels.LabelSourceReserved, pkglabels.IDNameWorld)
 	registry.MustRegister(h.flowsToWorld)
 	return nil

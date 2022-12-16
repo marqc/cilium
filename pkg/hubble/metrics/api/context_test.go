@@ -6,6 +6,7 @@ package api
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -24,6 +25,19 @@ func TestParseContextOptions(t *testing.T) {
 	opts, err := ParseContextOptions(Options{"unknown": ""})
 	assert.Nil(t, err)
 	assert.NotNil(t, opts)
+
+	opts, err = ParseContextOptions(Options{"ttl": ""})
+	assert.NotNil(t, err)
+	assert.Nil(t, opts)
+
+	opts, err = ParseContextOptions(Options{"ttl": "invalid"})
+	assert.NotNil(t, err)
+	assert.Nil(t, opts)
+
+	opts, err = ParseContextOptions(Options{"ttl": "60m"})
+	assert.Nil(t, err)
+	assert.NotNil(t, opts)
+	assert.Equal(t, time.Hour, opts.TTL)
 
 	opts, err = ParseContextOptions(Options{"sourceContext": "invalid"})
 	assert.NotNil(t, err)

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	"github.com/prometheus/client_golang/prometheus"
 
 	flowpb "github.com/cilium/cilium/api/v1/flow"
@@ -16,9 +17,9 @@ import (
 )
 
 type httpHandler struct {
-	requests  *prometheus.CounterVec
-	responses *prometheus.CounterVec
-	duration  *prometheus.HistogramVec
+	requests  *util.CounterVec
+	responses *util.CounterVec
+	duration  *util.HistogramVec
 	context   *api.ContextOptions
 	useV2     bool
 	exemplars bool
@@ -35,34 +36,34 @@ func (h *httpHandler) Init(registry *prometheus.Registry, options api.Options) e
 	}
 
 	if h.useV2 {
-		h.requests = prometheus.NewCounterVec(prometheus.CounterOpts{
+		h.requests = util.NewCounterVec(prometheus.CounterOpts{
 			Namespace: api.DefaultPrometheusNamespace,
 			Name:      "http_requests_total",
 			Help:      "Count of HTTP requests",
-		}, append(h.context.GetLabelNames(), "method", "protocol", "status", "reporter"))
-		h.duration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		}, append(h.context.GetLabelNames(), "method", "protocol", "status", "reporter"), c.TTL)
+		h.duration = util.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace: api.DefaultPrometheusNamespace,
 			Name:      "http_request_duration_seconds",
 			Help:      "Quantiles of HTTP request duration in seconds",
-		}, append(h.context.GetLabelNames(), "method", "reporter"))
+		}, append(h.context.GetLabelNames(), "method", "reporter"), c.TTL)
 		registry.MustRegister(h.requests)
 		registry.MustRegister(h.duration)
 	} else {
-		h.requests = prometheus.NewCounterVec(prometheus.CounterOpts{
+		h.requests = util.NewCounterVec(prometheus.CounterOpts{
 			Namespace: api.DefaultPrometheusNamespace,
 			Name:      "http_requests_total",
 			Help:      "Count of HTTP requests",
-		}, append(h.context.GetLabelNames(), "method", "protocol", "reporter"))
-		h.responses = prometheus.NewCounterVec(prometheus.CounterOpts{
+		}, append(h.context.GetLabelNames(), "method", "protocol", "reporter"), c.TTL)
+		h.responses = util.NewCounterVec(prometheus.CounterOpts{
 			Namespace: api.DefaultPrometheusNamespace,
 			Name:      "http_responses_total",
 			Help:      "Count of HTTP responses",
-		}, append(h.context.GetLabelNames(), "method", "protocol", "status", "reporter"))
-		h.duration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		}, append(h.context.GetLabelNames(), "method", "protocol", "status", "reporter"), c.TTL)
+		h.duration = util.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace: api.DefaultPrometheusNamespace,
 			Name:      "http_request_duration_seconds",
 			Help:      "Quantiles of HTTP request duration in seconds",
-		}, append(h.context.GetLabelNames(), "method", "reporter"))
+		}, append(h.context.GetLabelNames(), "method", "reporter"), c.TTL)
 		registry.MustRegister(h.requests)
 		registry.MustRegister(h.responses)
 		registry.MustRegister(h.duration)

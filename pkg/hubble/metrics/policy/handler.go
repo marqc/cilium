@@ -7,6 +7,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	"github.com/prometheus/client_golang/prometheus"
 
 	flowpb "github.com/cilium/cilium/api/v1/flow"
@@ -16,7 +17,7 @@ import (
 )
 
 type policyHandler struct {
-	verdicts *prometheus.CounterVec
+	verdicts *util.CounterVec
 	context  *api.ContextOptions
 }
 
@@ -30,11 +31,11 @@ func (d *policyHandler) Init(registry *prometheus.Registry, options api.Options)
 	labels := []string{"direction", "match", "action"}
 	labels = append(labels, d.context.GetLabelNames()...)
 
-	d.verdicts = prometheus.NewCounterVec(prometheus.CounterOpts{
+	d.verdicts = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "policy_verdicts_total",
 		Help:      "Total number of Cilium network policy verdicts",
-	}, labels)
+	}, labels, c.TTL)
 
 	registry.MustRegister(d.verdicts)
 	return nil

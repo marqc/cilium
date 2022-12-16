@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"k8s.io/utils/strings/slices"
 
@@ -134,6 +135,9 @@ type ContextOptions struct {
 	// Labels is the full set of labels that have been allowlisted when using the
 	// ContextLabels ContextIdentifier.
 	Labels labelsSet
+
+	// TTL for metric data series
+	TTL time.Duration
 }
 
 func parseContextIdentifier(s string) (ContextIdentifier, error) {
@@ -203,6 +207,11 @@ func ParseContextOptions(options Options) (*ContextOptions, error) {
 			}
 		case "labelscontext":
 			o.Labels, err = parseLabels(value)
+			if err != nil {
+				return nil, err
+			}
+		case "ttl":
+			o.TTL, err = time.ParseDuration(value)
 			if err != nil {
 				return nil, err
 			}

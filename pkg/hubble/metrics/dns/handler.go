@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cilium/cilium/pkg/hubble/metrics/util"
 	"github.com/prometheus/client_golang/prometheus"
 
 	flowpb "github.com/cilium/cilium/api/v1/flow"
@@ -20,9 +21,9 @@ type dnsHandler struct {
 
 	context *api.ContextOptions
 
-	queries       *prometheus.CounterVec
-	responses     *prometheus.CounterVec
-	responseTypes *prometheus.CounterVec
+	queries       *util.CounterVec
+	responses     *util.CounterVec
+	responseTypes *util.CounterVec
 }
 
 func (d *dnsHandler) Init(registry *prometheus.Registry, options api.Options) error {
@@ -51,25 +52,25 @@ func (d *dnsHandler) Init(registry *prometheus.Registry, options api.Options) er
 		responseTypeLabels = append(responseTypeLabels, "query")
 	}
 
-	d.queries = prometheus.NewCounterVec(prometheus.CounterOpts{
+	d.queries = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "dns_queries_total",
 		Help:      "Number of DNS queries observed",
-	}, queryAndResponseLabels)
+	}, queryAndResponseLabels, c.TTL)
 	registry.MustRegister(d.queries)
 
-	d.responses = prometheus.NewCounterVec(prometheus.CounterOpts{
+	d.responses = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "dns_responses_total",
 		Help:      "Number of DNS queries observed",
-	}, queryAndResponseLabels)
+	}, queryAndResponseLabels, c.TTL)
 	registry.MustRegister(d.responses)
 
-	d.responseTypes = prometheus.NewCounterVec(prometheus.CounterOpts{
+	d.responseTypes = util.NewCounterVec(prometheus.CounterOpts{
 		Namespace: api.DefaultPrometheusNamespace,
 		Name:      "dns_response_types_total",
 		Help:      "Number of DNS queries observed",
-	}, responseTypeLabels)
+	}, responseTypeLabels, c.TTL)
 	registry.MustRegister(d.responseTypes)
 
 	return nil
